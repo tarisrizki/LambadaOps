@@ -1,0 +1,121 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: asset.spec.ts >> Asset Workflows >> Create, edit, search, filter, detail, delete asset
+- Location: tests\e2e\asset.spec.ts:4:3
+
+# Error details
+
+```
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: page.fill: Test timeout of 30000ms exceeded.
+Call log:
+  - waiting for locator('input[name="name"]')
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e3]:
+    - heading "404" [level=1] [ref=f1e4]
+    - heading "This page could not be found." [level=2] [ref=f1e6]
+  - region "Notifications alt+T"
+  - button "Open Tanstack query devtools" [ref=f1e57] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=f1e111] [cursor=pointer]
+  - alert [ref=f1e115]
+```
+
+# Test source
+
+```ts
+  1  | import { test, expect } from '@playwright/test';
+  2  | 
+  3  | test.describe('Asset Workflows', () => {
+  4  |   test('Create, edit, search, filter, detail, delete asset', async ({ page }) => {
+  5  |     const ts = Date.now();
+  6  |     await page.goto('/assets');
+  7  |     
+  8  |     // Create Asset
+  9  |     await page.click('text=Create Asset');
+  10 |     await expect(page).toHaveURL(/\/assets\/new/);
+  11 |     
+> 12 |     await page.fill('input[name="name"]', `Test Asset ${ts}`);
+     |                ^ Error: page.fill: Test timeout of 30000ms exceeded.
+  13 |     await page.fill('input[name="purchasePrice"]', '1500');
+  14 |     
+  15 |     // Select dropdowns (category, location, department)
+  16 |     await page.locator('button', { hasText: 'Select Category' }).click();
+  17 |     await page.getByRole('option', { name: 'Default Category' }).click();
+  18 |     
+  19 |     await page.locator('button', { hasText: 'Select Location' }).click();
+  20 |     await page.getByRole('option', { name: 'Headquarters' }).click();
+  21 |     
+  22 |     await page.locator('button', { hasText: 'Select Department' }).click();
+  23 |     await page.getByRole('option', { name: 'IT' }).click();
+  24 | 
+  25 |     const [response] = await Promise.all([
+  26 |       page.waitForResponse(res => res.url().includes('/assets') && res.request().method() === 'POST', { timeout: 5000 }).catch(() => null),
+  27 |       page.click('button[type="submit"]', { force: true })
+  28 |     ]);
+  29 |     
+  30 |     if (response) {
+  31 |       const json = await response.json().catch(() => 'no json');
+  32 |       console.log('API RESPONSE:', JSON.stringify(json, null, 2));
+  33 |     } else {
+  34 |       console.log('NO API RESPONSE DETECTED');
+  35 |     }
+  36 |     
+  37 |     // Check for validation errors
+  38 |     const errors = await page.locator('.text-destructive').allTextContents();
+  39 |     if (errors.length > 0) {
+  40 |       console.log('VALIDATION ERRORS:', errors);
+  41 |     }
+  42 |     
+  43 |     // Verify creation by finding it in the table or redirect
+  44 |     await expect(page).toHaveURL(/\/assets\/\d+/);
+  45 |     
+  46 |     const errorBlock = page.locator('pre');
+  47 |     if (await errorBlock.count() > 0) {
+  48 |       console.log('ASSET DETAIL ERROR:', await errorBlock.textContent());
+  49 |     }
+  50 |     
+  51 |     await expect(page.locator('h1')).toContainText(`Test Asset ${ts}`);
+  52 |     
+  53 |     // Search
+  54 |     await page.goto('/assets');
+  55 |     await expect(page).toHaveURL('/assets');
+  56 |     await page.fill('input[placeholder*="Search"]', `Test Asset ${ts}`);
+  57 |     await expect(page.getByRole('cell', { name: `Test Asset ${ts}` })).toBeVisible();
+  58 | 
+  59 |     // Detail
+  60 |     // Click on the asset row or view button
+  61 |     await page.getByRole('cell', { name: `Test Asset ${ts}` }).click();
+  62 |     await expect(page).toHaveURL(/\/assets\/\d+/);
+  63 |     await expect(page.locator('h1')).toContainText(`Test Asset ${ts}`);
+  64 | 
+  65 |     // Edit (Assuming edit button in detail view or table)
+  66 |     await page.goto('/assets');
+  67 |     await page.fill('input[placeholder*="Search"]', `AST-${ts}`);
+  68 |     await page.click('[aria-label="Edit"]');
+  69 |     await page.fill('input[name="name"]', `Edited Asset ${ts}`);
+  70 |     await page.click('button[type="submit"]');
+  71 |     await expect(page.locator(`text=Edited Asset ${ts}`)).toBeVisible();
+  72 | 
+  73 |     // Delete
+  74 |     await page.click('[aria-label="Delete"]');
+  75 |     await page.click('button:has-text("Confirm")');
+  76 |     await expect(page.locator(`text=Edited Asset ${ts}`)).toBeHidden();
+  77 |   });
+  78 | });
+  79 | 
+```

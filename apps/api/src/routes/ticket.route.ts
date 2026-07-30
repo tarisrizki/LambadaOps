@@ -16,37 +16,33 @@ type Variables = {
   user: AccessTokenClaims;
 };
 
-export const ticketRouter = new Hono<{ Variables: Variables }>();
-
-ticketRouter.use('*', authMiddleware);
-
-/**
- * [GET] /tickets
- * List tickets based on role rules.
- */
-ticketRouter.get('/', async (c) => {
+export const ticketRouter = new Hono<{ Variables: Variables }>()
+  .use('*', authMiddleware)
+  /**
+   * [GET] /tickets
+   * List tickets based on role rules.
+   */
+  .get('/', async (c) => {
   const user = c.get('user');
   const tickets = await ticketService.listTickets(user.userId, user.roleId);
   return c.json({ status: 'success', data: tickets });
-});
-
-/**
- * [GET] /tickets/:id
- * Get a specific ticket with comments.
- */
-ticketRouter.get('/:id', async (c) => {
+  })
+  /**
+   * [GET] /tickets/:id
+   * Get a specific ticket with comments.
+   */
+  .get('/:id', async (c) => {
   const id = parseInt(c.req.param('id'), 10);
   const user = c.get('user');
   
   const ticket = await ticketService.getTicket(id, user.userId, user.roleId);
   return c.json({ status: 'success', data: ticket });
-});
-
-/**
- * [POST] /tickets
- * Create a new ticket (All authenticated users can do this).
- */
-ticketRouter.post('/', zValidator('json', createTicketSchema), async (c) => {
+  })
+  /**
+   * [POST] /tickets
+   * Create a new ticket (All authenticated users can do this).
+   */
+  .post('/', zValidator('json', createTicketSchema), async (c) => {
   const user = c.get('user');
   const data = c.req.valid('json');
 
@@ -57,14 +53,13 @@ ticketRouter.post('/', zValidator('json', createTicketSchema), async (c) => {
   });
 
   return c.json({ status: 'success', data: newTicket }, 201);
-});
-
-/**
- * [POST] /tickets/:id/assign
- * Assign a ticket to a technician (IT Manager / Owner only).
- */
-ticketRouter.post(
-  '/:id/assign',
+  })
+  /**
+   * [POST] /tickets/:id/assign
+   * Assign a ticket to a technician (IT Manager / Owner only).
+   */
+  .post(
+    '/:id/assign',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   zValidator('json', assignTicketSchema),
   async (c) => {
@@ -81,14 +76,12 @@ ticketRouter.post(
     });
 
     return c.json({ status: 'success', data: updatedTicket });
-  }
-);
-
-/**
- * [POST] /tickets/:id/status
- * Update ticket status (progressing the workflow).
- */
-ticketRouter.post('/:id/status', zValidator('json', updateTicketStatusSchema), async (c) => {
+  })
+  /**
+   * [POST] /tickets/:id/status
+   * Update ticket status (progressing the workflow).
+   */
+  .post('/:id/status', zValidator('json', updateTicketStatusSchema), async (c) => {
   const ticketId = parseInt(c.req.param('id'), 10);
   const user = c.get('user');
   const data = c.req.valid('json');
@@ -104,13 +97,12 @@ ticketRouter.post('/:id/status', zValidator('json', updateTicketStatusSchema), a
   });
 
   return c.json({ status: 'success', data: updatedTicket });
-});
-
-/**
- * [POST] /tickets/:id/comments
- * Add a comment to a ticket.
- */
-ticketRouter.post('/:id/comments', zValidator('json', addTicketCommentSchema), async (c) => {
+  })
+  /**
+   * [POST] /tickets/:id/comments
+   * Add a comment to a ticket.
+   */
+  .post('/:id/comments', zValidator('json', addTicketCommentSchema), async (c) => {
   const ticketId = parseInt(c.req.param('id'), 10);
   const user = c.get('user');
   const data = c.req.valid('json');

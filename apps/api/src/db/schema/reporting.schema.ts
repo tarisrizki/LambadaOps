@@ -1,7 +1,5 @@
-import { pgMaterializedView, bigint, varchar, numeric, timestamp, integer } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
+import { pgMaterializedView } from 'drizzle-orm/pg-core';
 import { assets } from './asset.schema.js';
-import { tenants } from './tenant.schema.js';
 
 // Define a materialized view for Asset Summary (CQRS Read Model)
 export const assetSummaryView = pgMaterializedView('asset_summary_view').as((qb) => 

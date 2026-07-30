@@ -1,61 +1,85 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { jwtDecode } from 'jwt-decode';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { authQueries } from '@/features/auth/api/queries';
 
-export interface AccessTokenClaims {
-  userId: number;
+export interface UserProfile {
+  id: number;
+  email: string;
+  name: string | null;
   tenantId: number;
   roleId: number;
 }
 
 interface AuthContextType {
-  claims: AccessTokenClaims | null;
+  user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string) => void;
+  login: (token: string) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [claims, setClaims] = useState<AccessTokenClaims | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    const initAuth = () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const decoded = jwtDecode<AccessTokenClaims>(token);
-          // Check expiration if we had 'exp' in claims, but for MVP we rely on API 401s
-          setClaims(decoded);
-        } catch (error) {
-          console.error('Invalid token', error);
-          localStorage.removeItem('token');
-        }
-      }
-      setIsLoading(false);
-    };
-
-    initAuth();
+    // Read from localStorage only on client mount
+    const savedToken = localStorage.getItem('token');
+    if (savedToken) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setToken(savedToken);
+    }
+    setIsMounted(true);
   }, []);
 
-  const login = (token: string) => {
-    localStorage.setItem('token', token);
-    const decoded = jwtDecode<AccessTokenClaims>(token);
-    setClaims(decoded);
+  const { data: user, isLoading: isQueryLoading, error } = useQuery({
+    ...authQueries.me(token || undefined),
+    enabled: !!token,
+  });
+
+  // Treat as loading while checking localStorage or actively fetching
+  const isLoading = !isMounted || (!!token && isQueryLoading);
+
+  useEffect(() => {
+    if (error) {
+      console.error('Session restore failed:', error);
+      localStorage.removeItem('token');
+      // Token state update should happen separately to avoid cascading render lint warning
+    }
+  }, [error]);
+
+  const login = async (newToken: string) => {
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+    // Explicitly refetch to ensure fresh data
+    await queryClient.fetchQuery({ ...authQueries.me(newToken) });
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    setClaims(null);
+    setToken(null);
+    queryClient.removeQueries({ queryKey: authQueries.me().queryKey });
     window.location.href = '/login';
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground animate-pulse">Restoring session...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <AuthContext.Provider value={{ claims, isAuthenticated: !!claims, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user: (user as UserProfile) || null, isAuthenticated: !!user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

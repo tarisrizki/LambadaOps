@@ -14,18 +14,25 @@ export const importRouter = new Hono<{
   Variables: {
     user: AccessTokenClaims;
   };
-}>();
-
-// Ensure only OWNER_ADMIN or IT_MANAGER can import
-importRouter.use('*', authMiddleware);
-importRouter.use('*', requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]));
-
-/**
- * [POST] /import/assets
- * Upload assets.xlsx and queue import job
- */
-importRouter.post('/assets', async (c) => {
-  const user = c.get('user');
+}>()
+  // Ensure only OWNER_ADMIN or IT_MANAGER can import
+  .use('*', authMiddleware)
+  .use('*', requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]))
+  /**
+   * [GET] /import/jobs
+   * Get all import jobs history for tenant
+   */
+  .get('/jobs', async (c) => {
+    const user = c.get('user');
+    const jobs = await importService.getImportJobs(user.tenantId);
+    return c.json({ status: 'success', data: jobs });
+  })
+  /**
+   * [POST] /import/assets
+   * Upload assets.xlsx and queue import job
+   */
+  .post('/assets', async (c) => {
+    const user = c.get('user');
 
   try {
     const body = await c.req.parseBody();
@@ -54,13 +61,13 @@ importRouter.post('/assets', async (c) => {
     console.error('Import upload error:', err);
     throw err;
   }
-});
+})
 
 /**
  * [GET] /import/jobs/:id
  * Get import job status
  */
-importRouter.get('/jobs/:id', async (c) => {
+  .get('/jobs/:id', async (c) => {
   const jobId = parseInt(c.req.param('id'), 10);
   const user = c.get('user');
 
@@ -71,13 +78,13 @@ importRouter.get('/jobs/:id', async (c) => {
   }
 
   return c.json({ status: 'success', data: job });
-});
+})
 
 /**
  * [GET] /import/jobs/:id/errors
  * Get import job errors
  */
-importRouter.get('/jobs/:id/errors', async (c) => {
+  .get('/jobs/:id/errors', async (c) => {
   const jobId = parseInt(c.req.param('id'), 10);
   const user = c.get('user');
 

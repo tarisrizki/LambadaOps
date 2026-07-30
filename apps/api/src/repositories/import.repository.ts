@@ -1,6 +1,6 @@
 import { db } from '../db/index.js';
 import { importJobs, importErrors } from '../db/schema/import-export.schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 export const importRepository = {
   async createImportJob(data: typeof importJobs.$inferInsert) {
@@ -23,6 +23,14 @@ export const importRepository = {
       .from(importJobs)
       .where(eq(importJobs.id, id));
     return job;
+  },
+
+  async getImportJobs(tenantId: number) {
+    return await db
+      .select()
+      .from(importJobs)
+      .where(eq(importJobs.tenantId, tenantId))
+      .orderBy(desc(importJobs.createdAt));
   },
 
   async insertImportErrors(errors: (typeof importErrors.$inferInsert)[]) {

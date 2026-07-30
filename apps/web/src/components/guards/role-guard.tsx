@@ -10,13 +10,13 @@ interface RoleGuardProps {
 }
 
 export function RoleGuard({ allowedRoles, children, fallback = null }: RoleGuardProps) {
-  const { claims, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
   if (isLoading) {
     return null; // Or a skeleton if we want, but usually null is better to avoid layout shift
   }
 
-  if (!claims || !allowedRoles.includes(claims.roleId)) {
+  if (!user || !allowedRoles.includes(user.roleId)) {
     return <>{fallback}</>;
   }
 

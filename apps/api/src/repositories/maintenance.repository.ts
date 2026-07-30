@@ -1,4 +1,4 @@
-import { eq, and, desc, isNull, inArray } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { 
   maintenanceJobs, 
   maintenanceTasks, 
@@ -161,8 +161,7 @@ export class MaintenanceRepository extends TenantRepository {
    * Exposes transaction to be used by services
    */
   async transaction<T>(callback: (txRepo: this) => Promise<T>): Promise<T> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return db.transaction(async (tx: any) => {
+    return db.transaction(async (tx) => {
       const txRepo = this.withTx(tx);
       return callback(txRepo);
     });

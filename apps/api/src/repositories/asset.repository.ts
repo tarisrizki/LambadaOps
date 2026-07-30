@@ -1,5 +1,5 @@
 import { eq, and, sql, isNull, ilike, desc } from 'drizzle-orm';
-import { assets, assetEvents, assetAssignments, assetCategories, locations } from '../db/schema/asset.schema.js';
+import { assets, assetAssignments, assetCategories, locations, departments } from '../db/schema/asset.schema.js';
 import { TenantRepository } from './base.repository.js';
 
 export class AssetRepository extends TenantRepository {
@@ -15,6 +15,15 @@ export class AssetRepository extends TenantRepository {
       })
       .returning();
     return asset!;
+  }
+
+  /**
+   * Seeds default reference data for the tenant.
+   */
+  async seedDefaults(): Promise<void> {
+    await this.db.insert(assetCategories).values({ tenantId: this.tenantId, name: 'Default Category' });
+    await this.db.insert(locations).values({ tenantId: this.tenantId, name: 'Headquarters' });
+    await this.db.insert(departments).values({ tenantId: this.tenantId, name: 'IT' });
   }
 
   /**
@@ -104,6 +113,19 @@ export class AssetRepository extends TenantRepository {
   }
 
   /**
+   * Counts the total number of assets for the current tenant, including soft-deleted ones.
+   * Useful for generating sequential, unique asset codes.
+   */
+  async countTotal(): Promise<number> {
+    const [result] = await this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(assets)
+      .where(eq(assets.tenantId, this.tenantId));
+    
+    return Number(result?.count ?? 0);
+  }
+
+  /**
    * Lists assets for a tenant with optional search.
    */
   async findAll(search?: string): Promise<(typeof assets.$inferSelect)[]> {
@@ -126,7 +148,7 @@ export class AssetRepository extends TenantRepository {
   async search(filters: { status?: string; locationId?: number; departmentId?: number }): Promise<{ data: (typeof assets.$inferSelect)[] }> {
     const conditions = [eq(assets.tenantId, this.tenantId), isNull(assets.deletedAt)];
     
-    if (filters.status) conditions.push(eq(assets.status, filters.status as any));
+    if (filters.status) conditions.push(eq(assets.status, filters.status as typeof assets.$inferSelect['status']));
     if (filters.locationId) conditions.push(eq(assets.locationId, filters.locationId));
     if (filters.departmentId) conditions.push(eq(assets.departmentId, filters.departmentId));
 
@@ -227,8 +249,7 @@ export class AssetRepository extends TenantRepository {
    * Exposes transaction to be used by services
    */
   async transaction<T>(callback: (txRepo: this) => Promise<T>): Promise<T> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.db.transaction(async (tx: any) => {
+    return this.db.transaction(async (tx: unknown) => {
       const txRepo = this.withTx(tx);
       return callback(txRepo);
     });
@@ -251,6 +272,16 @@ export class AssetRepository extends TenantRepository {
       .select()
       .from(locations)
       .where(eq(locations.tenantId, this.tenantId));
+  }
+
+  /**
+   * Retrieves all departments for the tenant.
+   */
+  async getDepartments() {
+    return this.db
+      .select()
+      .from(departments)
+      .where(eq(departments.tenantId, this.tenantId));
   }
 
   /**

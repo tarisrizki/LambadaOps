@@ -1,4 +1,5 @@
 import { assetRepository } from '../repositories/asset.repository.js';
+import { assignmentRepository } from '../repositories/assignment.repository.js';
 import { BusinessRuleError, ConflictError, ValidationError, NotFoundError } from '../lib/errors.js';
 import { activityService } from './activity.service.js';
 import crypto from 'node:crypto';
@@ -284,6 +285,20 @@ export class AssignmentService {
     // Validate existence and tenant isolation
     await this.validateAssetForReturn(assetId); // Any existing asset can have its history checked
     return assetRepository.getAssignmentHistory(assetId);
+  }
+
+  // --- Global CRUD Methods ---
+
+  async listAssignments(search?: string) {
+    return assignmentRepository.list(search);
+  }
+
+  async getAssignmentById(id: number) {
+    const record = await assignmentRepository.findById(id);
+    if (!record) {
+      throw new NotFoundError('Assignment');
+    }
+    return record;
   }
 }
 

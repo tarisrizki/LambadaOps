@@ -48,13 +48,11 @@ export const importService = {
         return;
       }
       const sheet = workbook.Sheets[sheetName]!;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rows = xlsx.utils.sheet_to_json(sheet) as Record<string, unknown>[];
 
       let successRows = 0;
       let failedRows = 0;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const errors: any[] = [];
+      const errors: Array<{ importJobId: number; rowNumber: number; errorMessage: string; rawRowData: unknown; field: string | null }> = [];
 
       // Pre-fetch categories and locations for mapping
       const categories = await assetRepository.getCategories();
@@ -135,6 +133,10 @@ export const importService = {
     const job = await importRepository.getImportJob(jobId);
     if (!job) throw new NotFoundError('Import Job');
     return job;
+  },
+
+  async getImportJobs(tenantId: number) {
+    return await importRepository.getImportJobs(tenantId);
   },
 
   async getImportErrors(jobId: number) {

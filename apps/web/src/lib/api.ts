@@ -11,6 +11,6 @@ export const getAuthToken = () => {
 export const api = hc<AppType>(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001', {
   headers: () => {
     const token = getAuthToken();
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return token ? { Authorization: `Bearer ${token}` } : ({} as Record<string, string>);
   }
 });

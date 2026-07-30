@@ -6,15 +6,22 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:web": "bun --cwd apps/web run dev",
-    "dev:api": "bun --cwd apps/api run dev",
-    "build:web": "bun --cwd apps/web run build",
-    "build:api": "bun --cwd apps/api run build",
-    "lint": "bun --cwd apps/web run lint && bun --cwd apps/api run lint",
-    "test": "bun --cwd apps/api run test",
-    "test:isolation": "bun --cwd apps/api run test:isolation"
+    "dev:web": "cd apps/web && bun dev",
+    "dev:api": "cd apps/api && bun dev",
+    "build:web": "cd apps/web && bun build",
+    "build:api": "cd apps/api && bun build",
+    "lint": "cd apps/web && bun lint && cd ../../apps/api && bun lint",
+    "test": "cd apps/api && bun test",
+    "test:isolation": "cd apps/api && bun test:isolation"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.0",
+    "@types/bun": "latest",
     "typescript": "^5.4.5"
+  },
+  "module": "index.ts",
+  "type": "module",
+  "dependencies": {
+    "playwright": "^1.62.0"
   }
 }

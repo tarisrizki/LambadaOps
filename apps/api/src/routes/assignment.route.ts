@@ -11,14 +11,14 @@ type Variables = {
 };
 
 // This router will be mounted at /api/assets/:assetId/assignments
-export const assignmentRouter = new Hono<{ Variables: Variables }>();
+const app = new Hono<{ Variables: Variables }>();
 
 /**
  * [GET] /api/assets/:assetId/assignments
  * Retrieves the assignment history for an asset.
  * SPEC §5: IT Manager and Owner/Admin can view assignment history.
  */
-assignmentRouter.get(
+export const assignmentRouter = app.get(
   '/',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   async (c) => {
@@ -30,14 +30,13 @@ assignmentRouter.get(
       data: history,
     });
   }
-);
-
+)
 /**
  * [POST] /api/assets/:assetId/assignments
  * Assigns an asset to a user or department.
  * SPEC §0: Owner/Admin and IT Manager only.
  */
-assignmentRouter.post(
+.post(
   '/',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   zValidator('json', assignAssetSchema),
@@ -64,14 +63,13 @@ assignmentRouter.post(
       data: result,
     });
   }
-);
-
+)
 /**
  * [POST] /api/assets/:assetId/assignments/transfer
  * Transfers an asset to a new user or department.
  * SPEC §0: Owner/Admin and IT Manager only.
  */
-assignmentRouter.post(
+.post(
   '/transfer',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   zValidator('json', transferAssetSchema),
@@ -98,14 +96,13 @@ assignmentRouter.post(
       data: result,
     });
   }
-);
-
+)
 /**
  * [POST] /api/assets/:assetId/assignments/return
  * Returns an asset.
  * SPEC §0: Owner/Admin and IT Manager only.
  */
-assignmentRouter.post(
+.post(
   '/return',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   zValidator('json', returnAssetSchema),

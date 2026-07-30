@@ -1,4 +1,4 @@
-import { pgTable, bigserial, varchar, timestamp, bigint, pgEnum, date, numeric, integer, unique, jsonb, text, index, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, bigserial, varchar, timestamp, bigint, pgEnum, date, numeric, integer, unique, text, index, boolean } from 'drizzle-orm/pg-core';
 import { tenants } from './tenant.schema.js';
 import { assets, assetAttachments } from './asset.schema.js';
 import { users } from './user.schema.js';

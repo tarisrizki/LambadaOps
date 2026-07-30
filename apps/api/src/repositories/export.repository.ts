@@ -64,8 +64,7 @@ export class ExportRepository extends TenantRepository {
    * Exposes transaction to be used by services.
    */
   async transaction<T>(callback: (txRepo: this) => Promise<T>): Promise<T> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.db.transaction(async (tx: any) => {
+    return this.db.transaction(async (tx: unknown) => {
       const txRepo = this.withTx(tx);
       return callback(txRepo);
     });

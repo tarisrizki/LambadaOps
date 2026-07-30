@@ -38,6 +38,8 @@ import { ticketRouter } from './routes/ticket.route.js';
 import { importRouter } from './routes/import.route.js';
 import { notificationRouter } from './routes/notification.route.js';
 import { exportRouter } from './routes/export.route.js';
+import { referenceRouter } from './routes/reference.route.js';
+import { assignmentGlobalRouter } from './routes/assignment-global.route.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const routes = app
@@ -48,7 +50,9 @@ const routes = app
   .route('/api/import', importRouter)
   .route('/api/export', exportRouter)
   .route('/api/notifications', notificationRouter)
-  .route('/api/webhooks', webhookRoutes);
+  .route('/api/webhooks', webhookRoutes)
+  .route('/api/reference', referenceRouter)
+  .route('/api/assignments', assignmentGlobalRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.notFound((c) => c.json({ statusCode: 404, message: 'Not Found' }, 404));

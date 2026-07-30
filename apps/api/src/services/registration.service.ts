@@ -5,6 +5,8 @@ import { userInitializationService } from './user-initialization.service.js';
 import { ConflictError } from '../lib/errors.js';
 import { isUniqueViolation } from '../lib/db-errors.js';
 import type { RegisterInput } from '../schemas/registration.schema.js';
+import { assetRepository } from '../repositories/asset.repository.js';
+import { TenantContext } from '../lib/tenant-context.js';
 
 export type RegisterResult = {
   tenant: {
@@ -88,6 +90,11 @@ export class RegistrationService {
     // ─── Step 3: Create Trialing Subscription ────────────────────────────────
     try {
       await subscriptionService.createTrialing(tenantId!, 'free');
+      
+      // Seed default reference data since there is no UI for this in MVP
+      await TenantContext.run({ tenantId: tenantId! }, async () => {
+        await assetRepository.seedDefaults();
+      });
     } catch (err) {
       // Rollback user and tenant
       try {

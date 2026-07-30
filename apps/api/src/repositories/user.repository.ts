@@ -30,6 +30,19 @@ export class GlobalUserRepository extends GlobalRepository {
   }
 
   /**
+   * Finds a user by ID globally (used for fetching profile via /me)
+   */
+  async findByIdGlobal(id: number): Promise<User | null> {
+    const result = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+
+    return result[0] ?? null;
+  }
+
+  /**
    * Finds a user by email WITHIN a specific tenant.
    * Used by AuthService during login to enforce tenant isolation.
    * FEATURE_SPEC §1.2: email is unique per-tenant, not globally.

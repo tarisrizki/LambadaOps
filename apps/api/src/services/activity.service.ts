@@ -1,14 +1,13 @@
 import { auditRepository } from '../repositories/audit.repository.js';
-import { eventRepository, type TimelineFilters } from '../repositories/event.repository.js';
-import { assetEvents } from '../db/schema/asset.schema.js';
+import { eventRepository, type TimelineFilters, type AssetEventType, type AssetEventCategory, type AssetEventSeverity } from '../repositories/event.repository.js';
 import { TenantContext } from '../lib/tenant-context.js';
 
 export type LogAuditParams = {
   entityType: string;
   entityId: string;
   action: string;
-  oldValue: any;
-  newValue: any;
+  oldValue: Record<string, unknown> | null;
+  newValue: Record<string, unknown> | null;
   actorId?: number;
   ipAddress?: string;
   userAgent?: string;
@@ -18,11 +17,11 @@ export type LogAuditParams = {
 
 export type LogEventParams = {
   assetId: number;
-  eventType: (typeof assetEvents.$inferSelect)['eventType'];
-  category: (typeof assetEvents.$inferSelect)['category'];
-  severity: (typeof assetEvents.$inferSelect)['severity'];
-  oldValue: any;
-  newValue: any;
+  eventType: AssetEventType;
+  category: AssetEventCategory;
+  severity: AssetEventSeverity;
+  oldValue: Record<string, unknown> | null;
+  newValue: Record<string, unknown> | null;
   actorUserId: number;
   actorNameSnapshot: string;
   note?: string;
@@ -34,7 +33,7 @@ export class ActivityService {
   /**
    * Logs a system-level audit record synchronously within a transaction.
    */
-  async logAudit(params: LogAuditParams, txSession: any) {
+  async logAudit(params: LogAuditParams, txSession: unknown) {
     const tenantId = TenantContext.getTenantId();
     const auditRepoTx = auditRepository.withTx(txSession);
     
@@ -56,7 +55,7 @@ export class ActivityService {
   /**
    * Logs a business timeline event synchronously within a transaction.
    */
-  async logEvent(params: LogEventParams, txSession: any) {
+  async logEvent(params: LogEventParams, txSession: unknown) {
     const tenantId = TenantContext.getTenantId();
     const eventRepoTx = eventRepository.withTx(txSession);
 

@@ -26,7 +26,7 @@ attachmentRouter.post(
   zValidator('form', uploadMetadataSchema),
   async (c) => {
     const { assetId } = c.req.valid('param');
-    const { attachmentType, note } = c.req.valid('form');
+    const { attachmentType } = c.req.valid('form');
     
     const body = await c.req.parseBody();
     const file = body['file'];

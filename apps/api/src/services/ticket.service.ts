@@ -1,6 +1,6 @@
 import { ticketRepository } from '../repositories/ticket.repository.js';
 import { activityService } from './activity.service.js';
-import { BusinessRuleError, NotFoundError, ConflictError, ForbiddenError } from '../lib/errors.js';
+import { NotFoundError, ConflictError, ForbiddenError } from '../lib/errors.js';
 import { SystemRoles } from '../lib/auth/roles.js';
 import { TenantContext } from '../lib/tenant-context.js';
 import { notificationService } from './notification.service.js';

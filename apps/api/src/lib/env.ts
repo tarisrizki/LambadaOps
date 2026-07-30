@@ -40,7 +40,7 @@ export const envSchema = z.object({
   FRONTEND_URL: z
     .string()
     .url()
-    .default('http://localhost:3001')
+    .default('http://localhost:3000')
     .describe('Origin of the Next.js frontend — required for CORS'),
 
   // ─── Inngest (Background Jobs) ────────────────────────────────────────────────
@@ -83,7 +83,7 @@ export function validateEnv(rawEnv: Record<string, unknown> = process.env): Env 
 let _env: Env | null = null;
 
 export function getEnv(): Env {
-  if (!_env) throw new Error('[getEnv] Environment not initialized. Call validateEnv() first.');
+  if (!_env) return initEnv();
   return _env;
 }
 

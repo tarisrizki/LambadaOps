@@ -32,3 +32,4 @@ export const returnAssetSchema = z.object({
   version: z.number().int().nonnegative(),
   note: z.string().optional(),
 });
+

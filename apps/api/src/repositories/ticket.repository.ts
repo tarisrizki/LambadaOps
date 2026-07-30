@@ -1,4 +1,4 @@
-import { eq, and, desc, inArray } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { tickets, ticketComments } from '../db/schema/ticket.schema.js';
 import { TenantRepository } from './base.repository.js';
 import { db } from '../db/index.js';
@@ -93,8 +93,7 @@ export class TicketRepository extends TenantRepository {
   }
   
   async transaction<T>(callback: (txRepo: this) => Promise<T>): Promise<T> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return db.transaction(async (tx: any) => {
+    return db.transaction(async (tx) => {
       const txRepo = this.withTx(tx);
       return callback(txRepo);
     });

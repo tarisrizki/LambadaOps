@@ -8,16 +8,14 @@ import { z } from 'zod';
 import * as fs from 'node:fs/promises';
 import type { AccessTokenClaims } from '../lib/auth/jwt.js';
 
-export const exportRouter = new Hono<{ Variables: { user: AccessTokenClaims } }>();
-
-exportRouter.use('*', authMiddleware);
-
-/**
- * [POST] /export
- * Trigger a new export job. SPEC §11: Owner/Admin and IT Manager only.
- */
-exportRouter.post(
-  '/',
+export const exportRouter = new Hono<{ Variables: { user: AccessTokenClaims } }>()
+  .use('*', authMiddleware)
+  /**
+   * [POST] /export
+   * Trigger a new export job. SPEC §11: Owner/Admin and IT Manager only.
+   */
+  .post(
+    '/',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   zValidator('json', z.object({
     entityType: z.enum(['assets', 'tickets']),
@@ -29,42 +27,39 @@ exportRouter.post(
     const job = await exportService.startExportJob(user.tenantId, user.userId, entityType);
     return c.json({ status: 'success', data: job }, 202);
   }
-);
-
-/**
- * [GET] /export/recent
- * Get recent export jobs for the current tenant.
- */
-exportRouter.get(
-  '/recent',
+)
+  /**
+   * [GET] /export/recent
+   * Get recent export jobs for the current tenant.
+   */
+  .get(
+    '/recent',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   async (c) => {
     const jobs = await exportService.getRecentExportJobs();
     return c.json({ status: 'success', data: jobs });
   }
-);
-
-/**
- * [GET] /export/:id
- * Get export job status.
- */
-exportRouter.get(
-  '/:id',
+)
+  /**
+   * [GET] /export/:id
+   * Get export job status.
+   */
+  .get(
+    '/:id',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   async (c) => {
     const id = parseInt(c.req.param('id'), 10);
     const job = await exportService.getExportJob(id);
     return c.json({ status: 'success', data: job });
   }
-);
-
-/**
- * [GET] /export/:id/download
- * Download the generated CSV file.
- * fileUrl in DB stores the absolute tmp file path (MVP local mock; production uses S3 presigned URL).
- */
-exportRouter.get(
-  '/:id/download',
+)
+  /**
+   * [GET] /export/:id/download
+   * Download the generated CSV file.
+   * fileUrl in DB stores the absolute tmp file path (MVP local mock; production uses S3 presigned URL).
+   */
+  .get(
+    '/:id/download',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   async (c) => {
     const id = parseInt(c.req.param('id'), 10);

@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from 'hono';
 import { verifyAccessToken } from '../lib/auth/jwt.js';
 import type { AccessTokenClaims } from '../lib/auth/jwt.js';
-import { UnauthorizedError, ForbiddenError } from '../lib/errors.js';
+import { UnauthorizedError } from '../lib/errors.js';
 import { TenantContext } from '../lib/tenant-context.js';
 
 export const authMiddleware: MiddlewareHandler<{ Variables: { user: AccessTokenClaims } }> = async (c, next) => {

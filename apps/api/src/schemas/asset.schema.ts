@@ -7,12 +7,11 @@ export const createAssetSchema = z.object({
   categoryId: z.number().positive(),
   locationId: z.number().positive(),
   departmentId: z.number().positive(),
-  purchaseDate: z.string().datetime().optional(),
+  purchaseDate: z.string().optional().or(z.literal('')),
   purchasePrice: z.string().optional(),
   serialNumber: z.string().max(255).optional(),
-  manufacturer: z.string().max(255).optional(),
-  model: z.string().max(255).optional(),
-  warrantyExpiry: z.string().datetime().optional(),
+  brand: z.string().max(100).optional(),
+  warrantyExpiry: z.string().optional().or(z.literal('')),
 });
 
 export const updateAssetSchema = z.object({
@@ -23,12 +22,11 @@ export const updateAssetSchema = z.object({
   categoryId: z.number().positive().optional(),
   locationId: z.number().positive().optional(),
   departmentId: z.number().positive().optional(),
-  purchaseDate: z.string().datetime().optional(),
+  purchaseDate: z.string().optional().or(z.literal('')),
   purchasePrice: z.string().optional(),
   serialNumber: z.string().max(255).optional(),
-  manufacturer: z.string().max(255).optional(),
-  model: z.string().max(255).optional(),
-  warrantyExpiry: z.string().datetime().optional(),
+  brand: z.string().max(100).optional(),
+  warrantyExpiry: z.string().optional().or(z.literal('')),
 });
 
 export const softDeleteAssetSchema = z.object({

@@ -45,7 +45,7 @@ export class AttachmentService {
   async uploadAttachment(params: UploadAttachmentParams) {
     const { assetId, fileBuffer, originalFileName, mimeType, attachmentType, actorUserId, actorNameSnapshot } = params;
 
-    const asset = await this.getValidAsset(assetId);
+    await this.getValidAsset(assetId);
     const tenantId = TenantContext.getTenantId();
 
     const fileUuid = crypto.randomUUID();
@@ -127,7 +127,7 @@ export class AttachmentService {
    * 3. Open Transaction: Soft delete metadata + Create Event
    */
   async deleteAttachment(attachmentId: number, assetId: number, actorUserId: number, actorNameSnapshot: string) {
-    const asset = await this.getValidAsset(assetId);
+    await this.getValidAsset(assetId);
     
     const attachment = await attachmentRepository.findById(attachmentId, assetId);
     if (!attachment) {

@@ -18,17 +18,15 @@ type Variables = {
   user: AccessTokenClaims;
 };
 
-export const maintenanceRouter = new Hono<{ Variables: Variables }>();
-
-// All maintenance routes require authentication
-maintenanceRouter.use('*', authMiddleware);
+export const maintenanceRouter = new Hono<{ Variables: Variables }>()
+  .use('*', authMiddleware)
 
 /**
  * [GET] /maintenance
  * Lists maintenance jobs (basic search).
  * SPEC §6: IT Manager, Owner/Admin can manage schedules. Technicians can update assigned.
  */
-maintenanceRouter.get('/', async (c) => {
+  .get('/', async (c) => {
   const assetIdStr = c.req.query('assetId');
   
   if (assetIdStr) {
@@ -38,13 +36,13 @@ maintenanceRouter.get('/', async (c) => {
   }
 
   return c.json({ status: 'success', data: [] });
-});
+})
 
 /**
  * [GET] /maintenance/:id
  * Retrieves a maintenance job by ID with parts and notes.
  */
-maintenanceRouter.get('/:id', async (c) => {
+  .get('/:id', async (c) => {
   const id = parseInt(c.req.param('id'), 10);
   const job = await maintenanceRepository.findJobById(id);
   if (!job) {
@@ -62,14 +60,14 @@ maintenanceRouter.get('/:id', async (c) => {
       notes,
     },
   });
-});
+})
 
 /**
  * [POST] /maintenance
  * Schedules a new maintenance job.
  * SPEC §0: Owner/Admin and IT Manager only.
  */
-maintenanceRouter.post(
+  .post(
   '/',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   zValidator('json', scheduleMaintenanceSchema),
@@ -91,14 +89,14 @@ maintenanceRouter.post(
       data: newJob,
     }, 201);
   }
-);
+)
 
 /**
  * [POST] /maintenance/:id/start
  * Starts a maintenance job.
  * SPEC §0: Owner/Admin, IT Manager, and Technician (assigned task).
  */
-maintenanceRouter.post(
+  .post(
   '/:id/start',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER, SystemRoles.TECHNICIAN]),
   zValidator('json', maintenanceActionSchema),
@@ -119,14 +117,14 @@ maintenanceRouter.post(
     
     return c.json({ status: 'success', data: result });
   }
-);
+)
 
 /**
  * [POST] /maintenance/:id/pause
  * Pauses a maintenance job.
  * SPEC §0: Owner/Admin, IT Manager, and Technician (assigned task).
  */
-maintenanceRouter.post(
+  .post(
   '/:id/pause',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER, SystemRoles.TECHNICIAN]),
   zValidator('json', maintenanceActionSchema),
@@ -147,14 +145,14 @@ maintenanceRouter.post(
     
     return c.json({ status: 'success', data: result });
   }
-);
+)
 
 /**
  * [POST] /maintenance/:id/resume
  * Resumes a maintenance job.
  * SPEC §0: Owner/Admin, IT Manager, and Technician (assigned task).
  */
-maintenanceRouter.post(
+  .post(
   '/:id/resume',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER, SystemRoles.TECHNICIAN]),
   zValidator('json', maintenanceActionSchema),
@@ -175,14 +173,14 @@ maintenanceRouter.post(
     
     return c.json({ status: 'success', data: result });
   }
-);
+)
 
 /**
  * [POST] /maintenance/:id/complete
  * Completes a maintenance job.
  * SPEC §0: Owner/Admin, IT Manager, and Technician (assigned task).
  */
-maintenanceRouter.post(
+  .post(
   '/:id/complete',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER, SystemRoles.TECHNICIAN]),
   zValidator('json', completeMaintenanceSchema),
@@ -202,14 +200,14 @@ maintenanceRouter.post(
     
     return c.json({ status: 'success', data: result });
   }
-);
+)
 
 /**
  * [POST] /maintenance/:id/cancel
  * Cancels a maintenance job.
  * SPEC §0: Owner/Admin and IT Manager only.
  */
-maintenanceRouter.post(
+  .post(
   '/:id/cancel',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   zValidator('json', maintenanceActionSchema),
@@ -230,14 +228,14 @@ maintenanceRouter.post(
     
     return c.json({ status: 'success', data: result });
   }
-);
+)
 
 /**
  * [POST] /maintenance/:id/parts
  * Adds a part to a maintenance job.
  * SPEC §0: Owner/Admin, IT Manager, and Technician.
  */
-maintenanceRouter.post(
+  .post(
   '/:id/parts',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER, SystemRoles.TECHNICIAN]),
   zValidator('json', addPartSchema),
@@ -257,14 +255,14 @@ maintenanceRouter.post(
     
     return c.json({ status: 'success', data: result });
   }
-);
+)
 
 /**
  * [POST] /maintenance/:id/notes
  * Adds a note to a maintenance job.
  * SPEC §0: Owner/Admin, IT Manager, and Technician.
  */
-maintenanceRouter.post(
+  .post(
   '/:id/notes',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER, SystemRoles.TECHNICIAN]),
   zValidator('json', addNoteSchema),
@@ -278,5 +276,4 @@ maintenanceRouter.post(
     const result = await maintenanceService.addNote(jobId, data.note, actorUserId, actorNameSnapshot);
     
     return c.json({ status: 'success', data: result });
-  }
-);
+  });

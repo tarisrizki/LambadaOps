@@ -1,0 +1,78 @@
+import { test, expect } from '@playwright/test';
+
+test.describe('Asset Workflows', () => {
+  test('Create, edit, search, filter, detail, delete asset', async ({ page }) => {
+    const ts = Date.now();
+    await page.goto('/assets');
+    
+    // Create Asset
+    await page.click('text=Create Asset');
+    await expect(page).toHaveURL(/\/assets\/new/);
+    
+    await page.fill('input[name="name"]', `Test Asset ${ts}`);
+    await page.fill('input[name="purchasePrice"]', '1500');
+    
+    // Select dropdowns (category, location, department)
+    await page.locator('button', { hasText: 'Select Category' }).click();
+    await page.getByRole('option', { name: 'Default Category' }).click();
+    
+    await page.locator('button', { hasText: 'Select Location' }).click();
+    await page.getByRole('option', { name: 'Headquarters' }).click();
+    
+    await page.locator('button', { hasText: 'Select Department' }).click();
+    await page.getByRole('option', { name: 'IT' }).click();
+
+    const [response] = await Promise.all([
+      page.waitForResponse(res => res.url().includes('/assets') && res.request().method() === 'POST', { timeout: 5000 }).catch(() => null),
+      page.click('button[type="submit"]', { force: true })
+    ]);
+    
+    if (response) {
+      const json = await response.json().catch(() => 'no json');
+      console.log('API RESPONSE:', JSON.stringify(json, null, 2));
+    } else {
+      console.log('NO API RESPONSE DETECTED');
+    }
+    
+    // Check for validation errors
+    const errors = await page.locator('.text-destructive').allTextContents();
+    if (errors.length > 0) {
+      console.log('VALIDATION ERRORS:', errors);
+    }
+    
+    // Verify creation by finding it in the table or redirect
+    await expect(page).toHaveURL(/\/assets\/\d+/);
+    
+    const errorBlock = page.locator('pre');
+    if (await errorBlock.count() > 0) {
+      console.log('ASSET DETAIL ERROR:', await errorBlock.textContent());
+    }
+    
+    await expect(page.locator('h1')).toContainText(`Test Asset ${ts}`);
+    
+    // Search
+    await page.goto('/assets');
+    await expect(page).toHaveURL('/assets');
+    await page.fill('input[placeholder*="Search"]', `Test Asset ${ts}`);
+    await expect(page.getByRole('cell', { name: `Test Asset ${ts}` })).toBeVisible();
+
+    // Detail
+    // Click on the asset row or view button
+    await page.getByRole('cell', { name: `Test Asset ${ts}` }).click();
+    await expect(page).toHaveURL(/\/assets\/\d+/);
+    await expect(page.locator('h1')).toContainText(`Test Asset ${ts}`);
+
+    // Edit (Assuming edit button in detail view or table)
+    await page.goto('/assets');
+    await page.fill('input[placeholder*="Search"]', `AST-${ts}`);
+    await page.click('[aria-label="Edit"]');
+    await page.fill('input[name="name"]', `Edited Asset ${ts}`);
+    await page.click('button[type="submit"]');
+    await expect(page.locator(`text=Edited Asset ${ts}`)).toBeVisible();
+
+    // Delete
+    await page.click('[aria-label="Delete"]');
+    await page.click('button:has-text("Confirm")');
+    await expect(page.locator(`text=Edited Asset ${ts}`)).toBeHidden();
+  });
+});

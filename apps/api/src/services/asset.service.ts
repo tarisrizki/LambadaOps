@@ -51,14 +51,19 @@ export class AssetService {
 
     try {
       return await assetRepository.transaction(async (txRepo) => {
-        // Auto-generate system fields
-        const count = await txRepo.count();
+        const count = await txRepo.countTotal();
         const assetCode = `AST-${String(count + 1).padStart(6, '0')}`;
         const qrCodeToken = crypto.randomUUID();
 
+        // Sanitize empty strings for dates and numbers
+        const sanitizedData = { ...data };
+        if (sanitizedData.purchaseDate === '') sanitizedData.purchaseDate = undefined;
+        if (sanitizedData.warrantyEnd === '') sanitizedData.warrantyEnd = undefined;
+        if (sanitizedData.purchasePrice === '') sanitizedData.purchasePrice = undefined;
+
         // Create the asset
         const asset = await txRepo.create({
-          ...data,
+          ...sanitizedData,
           assetCode,
           qrCodeToken,
         });
@@ -118,8 +123,14 @@ export class AssetService {
 
     try {
       return await assetRepository.transaction(async (txRepo) => {
+        // Sanitize empty strings for dates and numbers
+        const sanitizedData = { ...data };
+        if (sanitizedData.purchaseDate === '') sanitizedData.purchaseDate = undefined;
+        if (sanitizedData.warrantyEnd === '') sanitizedData.warrantyEnd = undefined;
+        if (sanitizedData.purchasePrice === '') sanitizedData.purchasePrice = undefined;
+
         // Attempt optimistic update
-        const updatedAsset = await txRepo.updateWithVersion(id, currentVersion, data);
+        const updatedAsset = await txRepo.updateWithVersion(id, currentVersion, sanitizedData);
         
         if (!updatedAsset) {
           throw new ConflictError('Concurrency conflict: The asset was modified by someone else. Please refresh and try again.');

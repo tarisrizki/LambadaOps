@@ -13,23 +13,19 @@ type Variables = {
   user: AccessTokenClaims;
 };
 
-export const assetRouter = new Hono<{ Variables: Variables }>();
-
-// All asset routes require authentication and a resolved tenant context
-assetRouter.use('*', authMiddleware);
-
-// Mount assignment sub-routes
-assetRouter.route('/:assetId/assignments', assignmentRouter);
-
-// Mount attachment sub-routes
-assetRouter.route('/', attachmentRouter);
-
-/**
- * [GET] /assets
- * Lists all assets for the current tenant.
- * SPEC §0: IT Manager and Owner/Admin see all assets.
- */
-assetRouter.get('/', async (c) => {
+export const assetRouter = new Hono<{ Variables: Variables }>()
+  // All asset routes require authentication and a resolved tenant context
+  .use('*', authMiddleware)
+  // Mount assignment sub-routes
+  .route('/:assetId/assignments', assignmentRouter)
+  // Mount attachment sub-routes
+  .route('/', attachmentRouter)
+  /**
+   * [GET] /assets
+   * Lists all assets for the current tenant.
+   * SPEC §0: IT Manager and Owner/Admin see all assets.
+   */
+  .get('/', async (c) => {
   const search = c.req.query('search');
   const assets = await assetService.listAssets(search);
   
@@ -37,13 +33,12 @@ assetRouter.get('/', async (c) => {
     status: 'success',
     data: assets,
   });
-});
-
-/**
- * [GET] /assets/scan/:qrCodeToken
- * Retrieves an asset by its unique QR code token. SPEC §4.
- */
-assetRouter.get('/scan/:qrCodeToken', async (c) => {
+  })
+  /**
+   * [GET] /assets/scan/:qrCodeToken
+   * Retrieves an asset by its unique QR code token. SPEC §4.
+   */
+  .get('/scan/:qrCodeToken', async (c) => {
   const qrCodeToken = c.req.param('qrCodeToken');
   const asset = await assetService.getAssetByQrCode(qrCodeToken);
   
@@ -51,13 +46,12 @@ assetRouter.get('/scan/:qrCodeToken', async (c) => {
     status: 'success',
     data: asset,
   });
-});
-
-/**
- * [GET] /assets/:id
- * Retrieves a specific asset by ID.
- */
-assetRouter.get('/:id', async (c) => {
+  })
+  /**
+   * [GET] /assets/:id
+   * Retrieves a specific asset by ID.
+   */
+  .get('/:id', async (c) => {
   const id = parseInt(c.req.param('id'), 10);
   const asset = await assetService.getAssetById(id);
   
@@ -65,13 +59,12 @@ assetRouter.get('/:id', async (c) => {
     status: 'success',
     data: asset,
   });
-});
-
-/**
- * [POST] /assets
- * Creates a new asset. SPEC §0: Owner/Admin and IT Manager only.
- */
-assetRouter.post(
+  })
+  /**
+   * [POST] /assets
+   * Creates a new asset. SPEC §0: Owner/Admin and IT Manager only.
+   */
+  .post(
   '/',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   zValidator('json', createAssetSchema),
@@ -88,13 +81,12 @@ assetRouter.post(
       data: newAsset,
     }, 201);
   }
-);
-
-/**
- * [PUT] /assets/:id
- * Updates an asset with optimistic locking. SPEC §0: Owner/Admin and IT Manager only.
- */
-assetRouter.put(
+  )
+  /**
+   * [PUT] /assets/:id
+   * Updates an asset with optimistic locking. SPEC §0: Owner/Admin and IT Manager only.
+   */
+  .put(
   '/:id',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   zValidator('json', updateAssetSchema),
@@ -118,13 +110,12 @@ assetRouter.put(
       data: updatedAsset,
     });
   }
-);
-
-/**
- * [DELETE] /assets/:id
- * Soft deletes an asset with optimistic locking. SPEC §0: Owner/Admin and IT Manager only.
- */
-assetRouter.delete(
+  )
+  /**
+   * [DELETE] /assets/:id
+   * Soft deletes an asset with optimistic locking. SPEC §0: Owner/Admin and IT Manager only.
+   */
+  .delete(
   '/:id',
   requireAnyRole([SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER]),
   zValidator('json', softDeleteAssetSchema),

@@ -2,20 +2,27 @@
 
 import { useAuth } from '@/components/providers/auth-provider';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
+  const [mounted, setMounted] = useState(false);
+  
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isLoading && isAuthenticated) {
       router.push('/dashboard');
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, router, mounted]);
 
-  if (isLoading || isAuthenticated) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  if (!mounted || isLoading || isAuthenticated) {
+    return null;
   }
 
   return (
