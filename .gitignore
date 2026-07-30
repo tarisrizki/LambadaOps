@@ -1,0 +1,44 @@
+# ─── Dependencies ────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ─── Build outputs ────────────────────────────────────────
+dist/
+build/
+.next/
+out/
+
+# ─── Environment ─────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─── Bun ─────────────────────────────────────────────────
+# bun.lockb IS committed — do not gitignore it
+
+# ─── Editor ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ─── OS ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Logs ────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Prisma ──────────────────────────────────────────────
+# migrations are committed; generated client is not
+apps/api/node_modules/.prisma/
+
+# ─── Test ────────────────────────────────────────────────
+coverage/

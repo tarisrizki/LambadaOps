@@ -1,0 +1,9 @@
+# bunfig.toml — Bun configuration for LambadaOps monorepo
+
+[install]
+# Pin exact versions for reproducibility
+exact = false
+
+[install.scopes]
+# Workspace packages resolved from local file system
+"@lambadaops" = { workspace = true }

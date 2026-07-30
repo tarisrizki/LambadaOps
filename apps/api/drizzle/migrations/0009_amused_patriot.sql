@@ -1,0 +1,1 @@
+CREATE MATERIALIZED VIEW "public"."asset_summary_view" AS (select "id", "tenant_id", "asset_code", "name", "status", "condition", "purchase_price", "department_id", "location_id", "current_assigned_user_id", "created_at" from "assets");

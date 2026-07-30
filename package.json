@@ -1,0 +1,20 @@
+{
+  "name": "lambadaops",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "bun --cwd apps/web run dev",
+    "dev:api": "bun --cwd apps/api run dev",
+    "build:web": "bun --cwd apps/web run build",
+    "build:api": "bun --cwd apps/api run build",
+    "lint": "bun --cwd apps/web run lint && bun --cwd apps/api run lint",
+    "test": "bun --cwd apps/api run test",
+    "test:isolation": "bun --cwd apps/api run test:isolation"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
