@@ -7,12 +7,20 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 1,
   workers: 1, // Single worker to avoid timeout issues in sandbox
-  reporter: 'list',
+  reporter: [
+    ['list'],
+    ['html', { open: 'never', outputFolder: 'playwright-report' }]
+  ],
   timeout: 30000, // 30 seconds per test
+  expect: {
+    timeout: 5000, // 5 seconds for expect assertions
+  },
+  outputDir: 'test-results/',
   use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
-    video: 'off',
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    trace: 'retain-on-failure',
+    video: 'retain-on-failure',
+    screenshot: 'only-on-failure',
   },
   webServer: [
     {
@@ -35,6 +43,22 @@ export default defineConfig({
       name: 'chromium',
       use: { 
         ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+    {
+      name: 'firefox',
+      use: { 
+        ...devices['Desktop Firefox'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+    {
+      name: 'webkit',
+      use: { 
+        ...devices['Desktop Safari'],
         storageState: 'playwright/.auth/user.json',
       },
       dependencies: ['setup'],

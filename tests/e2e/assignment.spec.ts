@@ -57,7 +57,7 @@ test.describe('Assignment Workflows', () => {
 
     // Return
     await page.click('button:has-text("Return")');
-    await page.click('button:has-text("Confirm")');
+    await page.click('button[type="submit"]:has-text("Return Asset")');
     await expect(page.locator('button:has-text("Assign")').first()).toBeVisible();
   });
 });

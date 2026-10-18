@@ -1,0 +1,2 @@
+ALTER TABLE "asset_assignments" ADD COLUMN "location_id" bigint;--> statement-breakpoint
+ALTER TABLE "asset_assignments" ADD CONSTRAINT "asset_assignments_location_id_locations_id_fk" FOREIGN KEY ("location_id") REFERENCES "public"."locations"("id") ON DELETE no action ON UPDATE no action;

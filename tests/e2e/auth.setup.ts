@@ -1,35 +1,28 @@
 import { test as setup, expect } from '@playwright/test';
-import path from 'path';
 
-const authFile = 'playwright/.auth/user.json';
+/**
+ * Global authentication setup.
+ * Runs once before all authenticated tests.
+ * Uses storageState to persist login session across test files.
+ */
+setup('create authenticated session', async ({ page, baseURL }) => {
+  const base = baseURL ?? 'http://localhost:3000';
 
-setup('authenticate', async ({ page, request }) => {
-  const ts = Date.now();
-  const email = `e2e${ts}@example.com`;
-  await page.goto('/register');
-  await page.fill('input[name="companyName"]', `Test Company ${ts}`);
-  await page.fill('input[name="domain"]', `test-company-${ts}`);
-  await page.fill('input[name="adminName"]', 'E2E Tester');
-  await page.fill('input[name="adminEmail"]', email);
-  await page.fill('input[name="adminPassword"]', 'password123');
-  await page.click('button[type="submit"]');
+  await page.goto(`${base}/login`);
 
-  // Wait a moment for validation or request
-  await page.waitForTimeout(2000);
-  const errors = await page.locator('.text-destructive').allTextContents();
-  console.log("Form Errors:", errors);
-  
-  // Should redirect to login
-  await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+  // Fill login form
+  const companySlug = process.env.E2E_COMPANY_SLUG ?? 'lambada-demo';
+  const email = process.env.E2E_EMAIL ?? 'admin@lambadademo.onmicrosoft.com';
+  const password = process.env.E2E_PASSWORD ?? 'TestPassword123!';
 
-  // Login
-  await page.fill('input[name="companySlug"]', `test-company-${ts}`);
-  await page.fill('input[name="email"]', email);
-  await page.fill('input[name="password"]', 'password123');
-  await page.click('button[type="submit"]');
+  await page.getByLabel('Company Slug').fill(companySlug);
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Password').fill(password);
+  await page.getByRole('button', { name: /sign in/i }).click();
 
-  await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
-  
-  // Save auth state
-  await page.context().storageState({ path: authFile });
+  // Wait for redirect to dashboard
+  await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+
+  // Verify the auth session is active
+  await expect(page.getByText(/dashboard/i)).toBeVisible({ timeout: 10000 });
 });

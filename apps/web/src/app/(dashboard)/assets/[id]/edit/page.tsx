@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { use } from 'react';
 import { assetQueries } from '@/features/assets/api/queries';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function EditAssetPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -18,8 +19,8 @@ export default function EditAssetPage({ params }: { params: Promise<{ id: string
   if (isLoading) {
     return (
       <div className="space-y-6 max-w-2xl mx-auto animate-pulse">
-        <div className="h-8 w-1/3 bg-muted rounded"></div>
-        <div className="h-96 w-full bg-muted rounded"></div>
+        <Skeleton className="h-8 w-1/3" />
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
@@ -53,7 +54,11 @@ export default function EditAssetPage({ params }: { params: Promise<{ id: string
         </Button>
         <h1 className="text-2xl font-bold tracking-tight">Edit Asset</h1>
       </div>
-      <AssetForm initialData={initialData} assetId={id} />
+      <AssetForm
+        mode="edit"
+        assetId={id}
+        initialData={initialData}
+      />
     </div>
   );
 }

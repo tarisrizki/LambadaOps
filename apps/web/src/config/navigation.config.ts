@@ -1,5 +1,5 @@
 import { SystemRoles } from '@/lib/roles';
-import { LayoutDashboard, Wrench, Ticket, Upload, Download, ClipboardList, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, Wrench, Ticket, Upload, Download, ClipboardList, Settings, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   name: string;
@@ -22,7 +22,7 @@ export const NAVIGATION: NavItem[] = [
     allowedRoles: [SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER, SystemRoles.TECHNICIAN] 
   },
   { 
-    name: 'Assignments', 
+    name: 'Check Outs', 
     href: '/assignments', 
     icon: ClipboardList, 
     allowedRoles: [SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER] 
@@ -49,6 +49,12 @@ export const NAVIGATION: NavItem[] = [
     name: 'Export', 
     href: '/export', 
     icon: Download, 
+    allowedRoles: [SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER] 
+  },
+  { 
+    name: 'Settings', 
+    href: '/settings', 
+    icon: Settings, 
     allowedRoles: [SystemRoles.OWNER_ADMIN, SystemRoles.IT_MANAGER] 
   },
 ];

@@ -1,0 +1,15 @@
+meta {
+  name: Scan QR
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/assets/scan/12345
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

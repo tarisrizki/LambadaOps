@@ -16,7 +16,7 @@ export default function CreateAssetPage() {
         </Button>
         <h1 className="text-2xl font-bold tracking-tight">Add New Asset</h1>
       </div>
-      <AssetForm />
+      <AssetForm mode="create" />
     </div>
   );
 }

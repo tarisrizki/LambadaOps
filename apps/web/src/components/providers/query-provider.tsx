@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState } from 'react';
+import { removeTokenCookie, removeCsrfToken } from '@/lib/cookies';
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -13,7 +14,9 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
             if (error && typeof error === 'object' && ('status' in error || 'message' in error)) {
               const err = error as Record<string, unknown>;
               if (err.status === 401 || (typeof err.message === 'string' && err.message.includes('401'))) {
-                localStorage.removeItem('token');
+                // Clear auth cookies (FE-005) instead of localStorage
+                removeTokenCookie();
+                removeCsrfToken();
                 window.location.href = '/login';
               }
             }

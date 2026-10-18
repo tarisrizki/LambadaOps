@@ -5,7 +5,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Ticket } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { dashboardQueries } from '../api/queries';
+
+interface ActivityItem {
+  id: number;
+  actorNameSnapshot: string;
+  eventType: string;
+  assetId: number;
+  createdAt: string;
+}
 
 export function DashboardHome() {
   const { user } = useAuth();
@@ -16,9 +26,11 @@ export function DashboardHome() {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
+  const { data: summary, isLoading } = useQuery(dashboardQueries.summary());
+
+  if (!mounted || isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-4 md:p-8 pt-6">
         <Skeleton className="h-[200px] w-full rounded-xl" />
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Skeleton className="h-[120px] rounded-xl" />
@@ -68,40 +80,52 @@ export function DashboardHome() {
           </CardContent>
         </Card>
 
-        {/* Recent Activity Placeholder */}
-        <Card className="col-span-3">
+        {/* Recent Activity Feed */}
+        <Card className="col-span-3 overflow-hidden flex flex-col">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>
-              Your latest notifications and actions.
+              Latest asset actions in your workspace.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center h-[200px] text-center border-2 border-dashed rounded-md p-6">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
-                <BellIcon className="h-6 w-6 text-primary" />
+          <CardContent className="flex-1 overflow-auto max-h-[250px]">
+            {summary?.recentActivity?.length > 0 ? (
+              <div className="space-y-4">
+                {summary.recentActivity.map((activity: ActivityItem) => (
+                  <div key={activity.id} className="flex items-start space-x-3 text-sm">
+                    <div className="flex-1">
+                      <p className="font-medium">{activity.actorNameSnapshot}</p>
+                      <p className="text-muted-foreground">{activity.eventType} on Asset #{activity.assetId}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(activity.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                ))}
               </div>
-              <h3 className="text-sm font-medium mb-1">No recent activity</h3>
-              <p className="text-sm text-muted-foreground">
-                When there is activity in your workspace, it will appear here.
-              </p>
-            </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center p-6">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
+                  <BellIcon className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-sm font-medium mb-1">No recent activity</h3>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Metric Placeholders */}
-        <MetricCard title="Total Assets" value="-" description="Pending module integration" />
-        <MetricCard title="Open Tickets" value="-" description="Pending module integration" />
-        <MetricCard title="Active Maintenance" value="-" description="Pending module integration" />
-        <MetricCard title="Current Plan" value="Free" description="Upgrade available" />
+        <MetricCard title="Total Assets" value={summary?.totalAssets?.toString() || '0'} description="Active and retired items" />
+        <MetricCard title="Unassigned Assets" value={summary?.unassignedAssets?.toString() || '0'} description="Available for checkout" />
+        <MetricCard title="Broken Assets" value={summary?.assetsInRepair?.toString() || '0'} description="Currently under maintenance" />
+        <MetricCard title="Active Tickets" value={summary?.activeTickets?.toString() || '0'} description="Open or in-progress issues" />
       </div>
     </div>
   );
 }
 
-function MetricCard({ title, value, description }: { title: string; value: string; description: string }) {
+const MetricCard = memo(function MetricCard({ title, value, description }: { title: string; value: string; description: string }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -117,7 +141,7 @@ function MetricCard({ title, value, description }: { title: string; value: strin
       </CardContent>
     </Card>
   );
-}
+});
 
 function BellIcon(props: React.SVGProps<SVGSVGElement>) {
   return (

@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Edit } from 'lucide-react';
+import { getTokenCookie } from '@/lib/cookies';
 
 export default function AssetDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function AssetDetailPage({ params }: { params: Promise<{ id: stri
         <pre className="text-left text-xs bg-muted text-foreground p-4 mt-4 mb-4 whitespace-pre-wrap">
           Error: {error?.message || 'None'}
           {"\n"}
-          Token length: {typeof window !== 'undefined' ? (localStorage.getItem('token')?.length || 0) : 'server'}
+          Token length: {typeof window !== 'undefined' ? (getTokenCookie()?.length || 0) : 'server'}
         </pre>
         <Button variant="link" onClick={() => router.push('/assets')}>
           Return to assets

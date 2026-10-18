@@ -44,3 +44,15 @@ export async function uploadAssets(file: File) {
   const json = await res.json();
   return json.data;
 }
+
+export async function commitImportJob(id: number) {
+  const res = await api.api.import.jobs[':id'].commit.$post({
+    param: { id: String(id) },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => null) as { message?: string } | null;
+    throw new Error(err?.message || 'Failed to commit import job');
+  }
+  const json = await res.json();
+  return json.data;
+}

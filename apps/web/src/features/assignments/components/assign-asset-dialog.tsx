@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -36,6 +37,7 @@ export function AssignAssetDialog({ assetId, version, isOpen, onClose }: AssignA
       assignmentType: 'individual',
       userId: null,
       departmentId: null,
+      locationId: null,
       note: '',
     },
   });
@@ -45,10 +47,11 @@ export function AssignAssetDialog({ assetId, version, isOpen, onClose }: AssignA
   const assignmentType = useWatch({ control, name: 'assignmentType' });
   const userIdValue = useWatch({ control, name: 'userId' });
   const departmentIdValue = useWatch({ control, name: 'departmentId' });
+  const locationIdValue = useWatch({ control, name: 'locationId' });
 
   useEffect(() => {
     if (isOpen) {
-      form.reset({ version, assignmentType: 'individual', userId: null, departmentId: null, note: '' });
+      form.reset({ version, assignmentType: 'individual', userId: null, departmentId: null, locationId: null, note: '' });
     }
   }, [isOpen, version, form]);
 
@@ -56,6 +59,7 @@ export function AssignAssetDialog({ assetId, version, isOpen, onClose }: AssignA
     if (assignmentType === 'unassigned') {
       form.setValue('userId', null);
       form.setValue('departmentId', null);
+      form.setValue('locationId', null);
     } else if (assignmentType === 'individual') {
       form.setValue('departmentId', null);
     } else if (assignmentType === 'shared') {
@@ -63,22 +67,35 @@ export function AssignAssetDialog({ assetId, version, isOpen, onClose }: AssignA
     }
   }, [assignmentType, form]);
 
-  const { data: users = [] } = useQuery({
+  type User = { id: number; name: string; email: string };
+  const { data: users = [] } = useQuery<User[]>({
     queryKey: ['reference', 'users'],
     queryFn: async () => {
       const res = await api.api.reference.users.$get();
       const json = await res.json();
-      return json.data;
+      return json.data as User[];
     },
     enabled: isOpen,
   });
 
-  const { data: departments = [] } = useQuery({
+  type Department = { id: number; name: string };
+  const { data: departments = [] } = useQuery<Department[]>({
     queryKey: ['reference', 'departments'],
     queryFn: async () => {
       const res = await api.api.reference.departments.$get();
       const json = await res.json();
-      return json.data;
+      return json.data as Department[];
+    },
+    enabled: isOpen,
+  });
+
+  type Location = { id: number; name: string };
+  const { data: locations = [] } = useQuery<Location[]>({
+    queryKey: ['reference', 'locations'],
+    queryFn: async () => {
+      const res = await api.api.reference.locations.$get();
+      const json = await res.json();
+      return json.data as Location[];
     },
     enabled: isOpen,
   });
@@ -95,11 +112,14 @@ export function AssignAssetDialog({ assetId, version, isOpen, onClose }: AssignA
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Assign Asset</DialogTitle>
+          <DialogTitle>Check Out Asset</DialogTitle>
+          <DialogDescription>
+            Check out this asset to a user, department, or location.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="assignmentType">Assignment Type</Label>
+            <Label htmlFor="assignmentType">Check Out Type</Label>
             <Select
               onValueChange={(val) => form.setValue('assignmentType', val as "individual" | "shared" | "unassigned")}
               value={assignmentType}
@@ -118,16 +138,16 @@ export function AssignAssetDialog({ assetId, version, isOpen, onClose }: AssignA
 
           {assignmentType === 'individual' && (
             <div className="space-y-2">
-              <Label htmlFor="userId">Assign to User</Label>
+              <Label htmlFor="userId">Check Out to User</Label>
               <Select
                 onValueChange={(val) => form.setValue('userId', Number(val))}
-                value={userIdValue ? String(userIdValue) : undefined}
+                value={userIdValue ? String(userIdValue) : ""}
               >
                 <SelectTrigger id="userId" className={errors.userId ? 'border-red-500' : ''}>
                   <SelectValue placeholder="Select User" />
                 </SelectTrigger>
                 <SelectContent>
-                  {users.map((u: { id: number, name: string, email: string }) => (
+                  {users.map((u) => (
                     <SelectItem key={u.id} value={String(u.id)}>
                       {u.name} ({u.email})
                     </SelectItem>
@@ -139,24 +159,50 @@ export function AssignAssetDialog({ assetId, version, isOpen, onClose }: AssignA
           )}
 
           {assignmentType === 'shared' && (
-            <div className="space-y-2">
-              <Label htmlFor="departmentId">Assign to Department</Label>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="departmentId">Check Out to Department</Label>
+                <Select
+                  onValueChange={(val) => form.setValue('departmentId', val ? Number(val) : null)}
+                  value={departmentIdValue ? String(departmentIdValue) : ""}
+                >
+                  <SelectTrigger id="departmentId" className={errors.departmentId ? 'border-red-500' : ''}>
+                    <SelectValue placeholder="Select Department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    {departments.map((d) => (
+                      <SelectItem key={d.id} value={String(d.id)}>
+                        {d.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.departmentId && <p className="text-sm text-red-500">{errors.departmentId.message}</p>}
+              </div>
+            </div>
+          )}
+
+          {assignmentType !== 'unassigned' && (
+            <div className="space-y-2 pt-2">
+              <Label htmlFor="locationId">Check Out to Location (Optional for Individual)</Label>
               <Select
-                onValueChange={(val) => form.setValue('departmentId', Number(val))}
-                value={departmentIdValue ? String(departmentIdValue) : undefined}
+                onValueChange={(val) => form.setValue('locationId', val ? Number(val) : null)}
+                value={locationIdValue ? String(locationIdValue) : ""}
               >
-                <SelectTrigger id="departmentId" className={errors.departmentId ? 'border-red-500' : ''}>
-                  <SelectValue placeholder="Select Department" />
+                <SelectTrigger id="locationId" className={errors.locationId ? 'border-red-500' : ''}>
+                  <SelectValue placeholder="Select Location" />
                 </SelectTrigger>
                 <SelectContent>
-                  {departments.map((d: { id: number, name: string }) => (
-                    <SelectItem key={d.id} value={String(d.id)}>
-                      {d.name}
+                  <SelectItem value="">None</SelectItem>
+                  {locations.map((l) => (
+                    <SelectItem key={l.id} value={String(l.id)}>
+                      {l.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {errors.departmentId && <p className="text-sm text-red-500">{errors.departmentId.message}</p>}
+              {errors.locationId && <p className="text-sm text-red-500">{errors.locationId.message}</p>}
             </div>
           )}
 
@@ -165,7 +211,7 @@ export function AssignAssetDialog({ assetId, version, isOpen, onClose }: AssignA
             <Textarea
               id="note"
               {...form.register('note')}
-              placeholder="Why is this asset being assigned?"
+              placeholder="Why is this asset being checked out?"
               className={errors.note ? 'border-red-500' : ''}
             />
             {errors.note && <p className="text-sm text-red-500">{errors.note.message}</p>}
@@ -176,7 +222,7 @@ export function AssignAssetDialog({ assetId, version, isOpen, onClose }: AssignA
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? 'Assigning...' : 'Assign'}
+              {mutation.isPending ? 'Checking Out...' : 'Check Out'}
             </Button>
           </DialogFooter>
         </form>

@@ -1,13 +1,14 @@
 import { api } from '@/lib/api';
+import { getTokenCookie } from '@/lib/cookies';
 
 export async function fetchMe(token: string | null) {
-  const activeToken = token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+  const activeToken = token || getTokenCookie();
   if (!activeToken) throw new Error('No token');
-  
+
   const res = await api.api.auth.me.$get(undefined, {
     headers: { Authorization: `Bearer ${activeToken}` },
   });
-  
+
   if (!res.ok) throw new Error('Invalid token');
   return await res.json();
 }

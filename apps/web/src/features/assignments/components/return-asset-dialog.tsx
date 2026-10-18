@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -54,7 +55,10 @@ export function ReturnAssetDialog({ assetId, version, isOpen, onClose }: ReturnA
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Return Asset</DialogTitle>
+          <DialogTitle>Check In Asset</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to check in this asset? It will be marked as available.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
@@ -62,7 +66,7 @@ export function ReturnAssetDialog({ assetId, version, isOpen, onClose }: ReturnA
             <Textarea
               id="note"
               {...form.register('note')}
-              placeholder="Record any damage or relevant notes upon return..."
+              placeholder="Record any damage or relevant notes upon check-in..."
               className={errors.note ? 'border-red-500' : ''}
             />
             {errors.note && <p className="text-sm text-red-500">{errors.note.message}</p>}
@@ -73,7 +77,7 @@ export function ReturnAssetDialog({ assetId, version, isOpen, onClose }: ReturnA
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? 'Returning...' : 'Return Asset'}
+              {mutation.isPending ? 'Checking In...' : 'Check In Asset'}
             </Button>
           </DialogFooter>
         </form>

@@ -3,6 +3,9 @@ import { z } from 'zod';
 export const assetStatusEnum = z.enum(['active', 'repair', 'lost', 'retired', 'disposed']);
 export const assetConditionEnum = z.enum(['good', 'fair', 'poor']);
 
+export type AssetStatus = z.infer<typeof assetStatusEnum>;
+export type AssetCondition = z.infer<typeof assetConditionEnum>;
+
 export const createAssetSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255),
   status: assetStatusEnum.default('active'),

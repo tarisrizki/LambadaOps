@@ -3,6 +3,13 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { authQueries } from '@/features/auth/api/queries';
+import {
+  setTokenCookie,
+  removeTokenCookie,
+  setCsrfToken,
+  removeCsrfToken,
+  getTokenCookie,
+} from '@/lib/cookies';
 
 export interface UserProfile {
   id: number;
@@ -16,7 +23,7 @@ interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string) => Promise<void>;
+  login: (token: string, csrfToken?: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -28,8 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Read from localStorage only on client mount
-    const savedToken = localStorage.getItem('token');
+    // Read from cookie (not localStorage) — FE-005
+    const savedToken = getTokenCookie();
     if (savedToken) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setToken(savedToken);
@@ -42,26 +49,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     enabled: !!token,
   });
 
-  // Treat as loading while checking localStorage or actively fetching
+  // Treat as loading while checking cookie or actively fetching
   const isLoading = !isMounted || (!!token && isQueryLoading);
 
   useEffect(() => {
     if (error) {
       console.error('Session restore failed:', error);
-      localStorage.removeItem('token');
+      removeTokenCookie();
+      removeCsrfToken();
       // Token state update should happen separately to avoid cascading render lint warning
     }
   }, [error]);
 
-  const login = async (newToken: string) => {
-    localStorage.setItem('token', newToken);
+  const login = async (newToken: string, csrfToken?: string) => {
+    // Store token in cookie instead of localStorage (FE-005)
+    setTokenCookie(newToken);
+    if (csrfToken) {
+      setCsrfToken(csrfToken);
+    }
     setToken(newToken);
     // Explicitly refetch to ensure fresh data
     await queryClient.fetchQuery({ ...authQueries.me(newToken) });
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    // Remove cookie instead of localStorage item (FE-005)
+    removeTokenCookie();
+    removeCsrfToken();
     setToken(null);
     queryClient.removeQueries({ queryKey: authQueries.me().queryKey });
     window.location.href = '/login';
@@ -78,8 +92,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
 
+  const safeUser = (user as { user?: UserProfile } | undefined) ?? user;
   return (
-    <AuthContext.Provider value={{ user: (user as UserProfile) || null, isAuthenticated: !!user, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user: (safeUser as UserProfile) || null,
+        isAuthenticated: !!user,
+        isLoading,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

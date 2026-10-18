@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/shared/data-table';
+import { SkeletonTable } from '@/components/shared/skeleton-table';
 import { AssetStatusBadge } from './asset-status-badge';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Edit, Trash, Eye } from 'lucide-react';
@@ -15,10 +16,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/navigation';
 import type { getAssets } from '../api/client';
+import type { AssetStatus } from '../schemas';
 
 export type Asset = Awaited<ReturnType<typeof getAssets>>[number];
 
-export function AssetTable({ data, onDeleteClick }: { data: Asset[]; onDeleteClick: (asset: Asset) => void }) {
+export interface AssetTableProps {
+  data: Asset[];
+  onDeleteClick: (asset: Asset) => void;
+  /** When true, shows a skeleton table instead of the content. */
+  isLoading?: boolean;
+}
+
+export function AssetTable({ data, onDeleteClick, isLoading = false }: AssetTableProps) {
   const router = useRouter();
   const columns = useMemo<ColumnDef<Asset>[]>(
     () => [
@@ -35,7 +44,7 @@ export function AssetTable({ data, onDeleteClick }: { data: Asset[]; onDeleteCli
       {
         accessorKey: 'status',
         header: 'Status',
-        cell: ({ row }) => <AssetStatusBadge status={row.original.status as "active" | "repair" | "lost" | "retired" | "disposed"} />,
+        cell: ({ row }) => <AssetStatusBadge status={row.original.status as AssetStatus} />,
       },
       {
         accessorKey: 'condition',
@@ -74,6 +83,10 @@ export function AssetTable({ data, onDeleteClick }: { data: Asset[]; onDeleteCli
     ],
     [onDeleteClick, router]
   );
+
+  if (isLoading) {
+    return <SkeletonTable rows={6} columns={5} withHeader={true} />;
+  }
 
   if (!data || data.length === 0) {
     return (

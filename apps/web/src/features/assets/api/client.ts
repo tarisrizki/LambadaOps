@@ -97,3 +97,72 @@ export async function getUsers() {
   const json = await res.json();
   return json.data;
 }
+
+// --- CATEGORIES CRUD ---
+
+export async function createCategory(name: string) {
+  const res = await api.api.reference.categories.$post({ json: { name } });
+  if (!res.ok) throw new Error('Failed to create category');
+  const json = await res.json();
+  return json.data;
+}
+
+export async function updateCategory(id: number, name: string) {
+  const res = await api.api.reference.categories[':id'].$put({ param: { id: String(id) }, json: { name } });
+  if (!res.ok) throw new Error('Failed to update category');
+  const json = await res.json();
+  return json.data;
+}
+
+export async function deleteCategory(id: number) {
+  const res = await api.api.reference.categories[':id'].$delete({ param: { id: String(id) } });
+  if (!res.ok) throw new Error('Failed to delete category');
+  const json = await res.json();
+  return json.data;
+}
+
+// --- LOCATIONS CRUD ---
+
+export async function createLocation(name: string) {
+  const res = await api.api.reference.locations.$post({ json: { name } });
+  if (!res.ok) throw new Error('Failed to create location');
+  const json = await res.json();
+  return json.data;
+}
+
+export async function updateLocation(id: number, name: string) {
+  const res = await api.api.reference.locations[':id'].$put({ param: { id: String(id) }, json: { name } });
+  if (!res.ok) throw new Error('Failed to update location');
+  const json = await res.json();
+  return json.data;
+}
+
+export async function deleteLocation(id: number) {
+  const res = await api.api.reference.locations[':id'].$delete({ param: { id: String(id) } });
+  if (!res.ok) throw new Error('Failed to delete location');
+  const json = await res.json();
+  return json.data;
+}
+
+// --- DEPARTMENTS CRUD ---
+
+export async function createDepartment(name: string) {
+  const res = await api.api.reference.departments.$post({ json: { name } });
+  if (!res.ok) throw new Error('Failed to create department');
+  const json = await res.json();
+  return json.data;
+}
+
+export async function updateDepartment(id: number, name: string) {
+  const res = await api.api.reference.departments[':id'].$put({ param: { id: String(id) }, json: { name } });
+  if (!res.ok) throw new Error('Failed to update department');
+  const json = await res.json();
+  return json.data;
+}
+
+export async function deleteDepartment(id: number) {
+  const res = await api.api.reference.departments[':id'].$delete({ param: { id: String(id) } });
+  if (!res.ok) throw new Error('Failed to delete department');
+  const json = await res.json();
+  return json.data;
+}

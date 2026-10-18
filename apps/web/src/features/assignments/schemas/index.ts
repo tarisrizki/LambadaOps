@@ -5,13 +5,14 @@ export const assignAssetSchema = z.object({
   assignmentType: z.enum(['individual', 'shared', 'unassigned']),
   userId: z.coerce.number().positive().optional().nullable(),
   departmentId: z.coerce.number().positive().optional().nullable(),
+  locationId: z.coerce.number().positive().optional().nullable(),
   note: z.string().optional(),
 }).refine(data => {
   if (data.assignmentType === 'individual' && !data.userId) return false;
-  if (data.assignmentType === 'shared' && !data.departmentId) return false;
+  if (data.assignmentType === 'shared' && !data.departmentId && !data.locationId) return false;
   return true;
 }, {
-  message: 'Invalid assignment targets: individual requires user, shared requires department',
+  message: 'Invalid assignment targets: individual requires user, shared requires department or location',
   path: ['assignmentType'],
 });
 
@@ -20,13 +21,14 @@ export const transferAssetSchema = z.object({
   assignmentType: z.enum(['individual', 'shared', 'unassigned']),
   userId: z.coerce.number().positive().optional().nullable(),
   departmentId: z.coerce.number().positive().optional().nullable(),
+  locationId: z.coerce.number().positive().optional().nullable(),
   note: z.string().optional(),
 }).refine(data => {
   if (data.assignmentType === 'individual' && !data.userId) return false;
-  if (data.assignmentType === 'shared' && !data.departmentId) return false;
+  if (data.assignmentType === 'shared' && !data.departmentId && !data.locationId) return false;
   return true;
 }, {
-  message: 'Invalid transfer targets: individual requires user, shared requires department',
+  message: 'Invalid transfer targets: individual requires user, shared requires department or location',
   path: ['assignmentType'],
 });
 

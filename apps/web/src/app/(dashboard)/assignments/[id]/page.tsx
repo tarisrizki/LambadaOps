@@ -80,10 +80,20 @@ export default function AssignmentDetailPage({ params }: { params: Promise<{ id:
               </div>
             )}
             {assignment.assignment.assignmentType === 'shared' && (
-              <div>
-                <div className="text-sm font-medium text-muted-foreground">Assigned Department</div>
-                <div className="font-medium">{assignment.department?.name || 'N/A'}</div>
-              </div>
+              <>
+                {assignment.department && (
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">Assigned Department</div>
+                    <div className="font-medium">{assignment.department.name}</div>
+                  </div>
+                )}
+                {assignment.location && (
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">Assigned Location</div>
+                    <div className="font-medium">{assignment.location.name}</div>
+                  </div>
+                )}
+              </>
             )}
             <div>
               <div className="text-sm font-medium text-muted-foreground">Assigned At</div>

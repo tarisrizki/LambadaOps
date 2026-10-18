@@ -1,8 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { assetStatusEnum } from '../schemas';
-import { z } from 'zod';
-
-type AssetStatus = z.infer<typeof assetStatusEnum>;
+import type { AssetStatus } from '../schemas';
 
 interface AssetStatusBadgeProps {
   status: AssetStatus;

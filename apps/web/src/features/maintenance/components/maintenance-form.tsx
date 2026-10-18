@@ -76,7 +76,7 @@ export function MaintenanceForm({ initialAssetId }: MaintenanceFormProps) {
             <Label htmlFor="assetId">Related Asset <span className="text-red-500">*</span></Label>
             <Select
               onValueChange={(val) => form.setValue('assetId', Number(val))}
-              value={assetIdValue ? String(assetIdValue) : undefined}
+              value={assetIdValue ? String(assetIdValue) : ""}
             >
               <SelectTrigger id="assetId" className={errors.assetId ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Select Asset" />

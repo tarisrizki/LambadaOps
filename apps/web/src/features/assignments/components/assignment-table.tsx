@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/shared/data-table';
 import { AssignmentTypeBadge } from './assignment-type-badge';
-import { Button } from '@/components/ui/button';
+
 import { MoreHorizontal, Eye } from 'lucide-react';
 import {
   DropdownMenu,
@@ -34,18 +34,24 @@ export function AssignmentTable({ data }: { data: Assignment[] }) {
       },
       {
         accessorKey: 'assignmentType',
-        header: 'Type',
+        header: 'Check Out Type',
         cell: ({ row }) => <AssignmentTypeBadge type={row.original.assignment.assignmentType} />,
       },
       {
         id: 'assignedTo',
-        header: 'Assigned To',
+        header: 'Checked Out To',
         cell: ({ row }) => {
           if (row.original.assignment.assignmentType === 'individual') {
             return <span>{row.original.user?.name || 'Unknown User'}</span>;
           }
           if (row.original.assignment.assignmentType === 'shared') {
-            return <span>{row.original.department?.name || 'Unknown Department'}</span>;
+            if (row.original.department) {
+              return <span>{row.original.department.name} (Dept)</span>;
+            }
+            if (row.original.location) {
+              return <span>{row.original.location.name} (Location)</span>;
+            }
+            return <span>Unknown Shared</span>;
           }
           return <span className="text-muted-foreground italic">None</span>;
         },
@@ -55,14 +61,14 @@ export function AssignmentTable({ data }: { data: Assignment[] }) {
         header: 'Status',
         cell: ({ row }) => {
           if (row.original.assignment.returnedAt) {
-            return <span className="text-muted-foreground text-sm">Returned on {new Date(row.original.assignment.returnedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>;
+            return <span className="text-muted-foreground text-sm">Checked In on {new Date(row.original.assignment.returnedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>;
           }
           return <span className="text-green-600 font-medium text-sm">Active</span>;
         }
       },
       {
         accessorKey: 'assignedAt',
-        header: 'Assigned Date',
+        header: 'Check Out Date',
         cell: ({ row }) => <span className="text-sm">{new Date(row.original.assignment.assignedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>,
       },
       {
@@ -93,9 +99,9 @@ export function AssignmentTable({ data }: { data: Assignment[] }) {
   if (!data || data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center border rounded-md border-dashed">
-        <h3 className="mt-4 text-lg font-semibold">No assignments found</h3>
+        <h3 className="mt-4 text-lg font-semibold">No check-outs found</h3>
         <p className="mb-4 text-sm text-muted-foreground">
-          You haven&apos;t created any assignments yet, or none match your search.
+          You haven&apos;t created any check-outs yet, or none match your search.
         </p>
       </div>
     );

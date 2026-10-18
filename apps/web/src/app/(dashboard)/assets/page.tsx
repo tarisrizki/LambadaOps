@@ -37,15 +37,11 @@ export default function AssetsPage() {
         />
       </div>
 
-      {isLoading ? (
-        <div className="space-y-2">
-          <div className="h-10 w-full animate-pulse bg-muted rounded-md" />
-          <div className="h-10 w-full animate-pulse bg-muted rounded-md" />
-          <div className="h-10 w-full animate-pulse bg-muted rounded-md" />
-        </div>
-      ) : (
-        <AssetTable data={assets || []} onDeleteClick={setAssetToDelete} />
-      )}
+      <AssetTable
+        data={assets || []}
+        onDeleteClick={setAssetToDelete}
+        isLoading={isLoading}
+      />
 
       <AssetDeleteDialog
         asset={assetToDelete}

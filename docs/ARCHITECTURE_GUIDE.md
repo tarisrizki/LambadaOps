@@ -85,7 +85,7 @@ The backend user profile is the absolute source of truth.
 **Authentication Flow:**
 1. User logs in.
 2. Backend issues a JWT.
-3. Frontend stores the JWT in `localStorage`.
+3. Frontend stores the JWT in **httpOnly cookies**.
 4. App initialization calls `GET /api/auth/me` via TanStack Query.
 5. The `AuthContext` consumes the fetched profile.
 6. UI and RoleGuards rely entirely on the `AuthContext` profile, never the decoded JWT claims.

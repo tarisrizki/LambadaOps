@@ -14,12 +14,12 @@ export default function AssignmentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Assignments</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Check Outs</h1>
       </div>
 
       <div className="flex items-center space-x-2">
         <Input
-          placeholder="Search assignments by asset or assigned to..."
+          placeholder="Search check-outs by asset or assigned to..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
